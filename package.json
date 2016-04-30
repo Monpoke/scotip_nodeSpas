@@ -1,27 +1,17 @@
 {
-  "name": "ScotIP_NodeSpas",
-  "version": "0.1.0",
-  "description": "Connector spring database to Asterisk Server.",
-  "main": "app.js",
+  "name": "NodeSpas",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "start": "grunt",
-    "test": "make test-unit",
-    "coverage": "make test-cov"
+    "start": "node ./bin/www"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Monpoke/scotip_nodeSpas.git"
-  },
-  "author": "Pierre Bourgeois <http://pierrebourgeois.fr>",
-  "license": "MIT",
-  "homepage": "https://github.com/Monpoke/scotip_nodeSpas",
   "dependencies": {
-    "boom": "^2.6.0",
-    "hapi": "~8.0.0",
-    "joi": "^5.0.1"
-  },
-  "devDependencies": {
-    "lab": "^5.0.2",
-    "should": "^4.3.0"
+    "body-parser": "~1.13.2",
+    "cookie-parser": "~1.3.5",
+    "debug": "~2.2.0",
+    "express": "~4.13.1",
+    "jade": "~1.11.0",
+    "morgan": "~1.6.1",
+    "serve-favicon": "~2.3.0"
   }
 }

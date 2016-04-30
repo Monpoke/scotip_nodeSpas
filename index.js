@@ -24,7 +24,14 @@ var plugins = [
         options: {
             database: database
         }
+    },
+    {
+        register: require('./routes/switchboards.js'),
+        options: {
+            database: database
+        }
     }
+
 ];
 
 server.register(plugins, function (err) {
