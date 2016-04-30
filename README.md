@@ -1,3 +1,6 @@
+[![Dependency Status](https://david-dm.org/Monpoke/scotip_nodeSpas.svg)](https://david-dm.org/Monpoke/scotip_nodeSpas)
+[![Build Status](https://travis-ci.org/Monpoke/scotip_nodeSpas.svg?branch=master)](https://travis-ci.org/Monpoke/scotip_nodeSpas)
+
 # ScotIP
 
 *ScotIP* is a software which allows companies to create their own telephone switchboards.
