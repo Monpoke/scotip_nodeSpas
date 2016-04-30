@@ -1,19 +1,35 @@
 'use strict';
 
 var Boom = require('boom');
-var TasksModel = require('../models/Tasks');
+var SwitchboardDAO = require('../dao/SwitchboardDAO');
+
+var DialplanReloader = require('../tools/DialplanReloader');
 
 function SwitchboardsController(database) {
-    //this.tasksModel = new TasksModel(database);
+    //this.switchboardDAO = new SwitchboardDAO();
 };
 
-// [GET] /tasks/{id}
+// [GET] /switchboards/{id}
 SwitchboardsController.prototype.regenerateDialplan = function(request, reply) {
     try {
-        var id = request.params.id;
+        var id = request.params.id * 1;
 
-        //reply(this.tasksModel.getTask(id));
-        reply("HelloWorld");
+        SwitchboardDAO.find(id, function(err, rows){
+            if(err){
+                reply(Boom.notFound(err));
+            }
+            else if(rows.length == 0){
+                reply(Boom.notFound("switchboard don't exists"))
+            }
+            else {
+                reply("{'statusCode': 200, 'message': 'reloading'}");
+                new DialplanReloader(rows[0]);
+            }
+        });
+
+
+
+
     } catch (e) {
         reply(Boom.notFound(e.message));
     }

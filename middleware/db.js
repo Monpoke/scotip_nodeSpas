@@ -2,34 +2,41 @@
 
 var mysql = require('mysql');
 var _ = require('underscore');
-var constants = require('src/config/constants.js');
+//var constants = require('src/config/constants.js');
 
-module.exports = function() {
+module.exports = function () {
 
     var internals = {};
     var externals = {};
 
     var options = {
-        multipleStatements: true
+        multipleStatements: true,
+        connectionLimit: 10,
+        host: 'localhost',
+        database: 'scotip',
+        user: 'scotip_nodespas',
+        password: 'scotip'
     };
-    _.extend(options, constants.database);
-    var pool  = mysql.createPool(options);
+
+
+    var pool = mysql.createPool(options);
     internals.pool = pool;
 
-    internals.connect = function(connectHandler) {
-        pool.getConnection(function(err, connection) {
+    internals.connect = function (connectHandler) {
+        pool.getConnection(function (err, connection) {
             if (err) return connectHandler(err, null);
             return connectHandler(null, connection);
         });
     };
 
-    externals.query = function(params) {
+    externals.query = function (params) {
         var sql = params.sql;
         var values = params.values;
         var queryHandler = params.callback;
-        internals.connect(function(err, connection) {
+
+        internals.connect(function (err, connection) {
             if (err) return queryHandler(err, null);
-            connection.query(sql, values, function(err, rows, fields) {
+            connection.query(sql, values, function (err, rows, fields) {
                 queryHandler(err, rows);
                 connection.release();
             });
