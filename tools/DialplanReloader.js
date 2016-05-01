@@ -80,8 +80,7 @@ DialplanReloader.prototype.generateAsteriskV1 = function generateAsteriskV1(root
      */
     finalConf += "; ACCESS LINE " + "\n"
         + "[scotip_user_" + this.switchboard.phoneCodeAccess + "]" + "\n"
-        + "exten => start,1,Answer()" + "\n"
-        + "same => n,Goto(dialplan_user_" + this.switchboard.sid + ",start,1)" + "\n\n";
+        + "exten => start,1,Goto(dialplan_user_" + this.switchboard.sid + ",start,1)" + "\n\n";
 
 
     /**
@@ -94,9 +93,11 @@ DialplanReloader.prototype.generateAsteriskV1 = function generateAsteriskV1(root
     /*
      * ROOT MODULE
      */
-    finalConf += "exten => start,1," + this.convertModuleToConf(rootModule) + "\n";
+    finalConf += "exten => start,1,Answer()" + "\n";
+    //finalConf += "same => n," + this.convertModuleToConf(rootModule) + "\n";
+
     if (this.moduleHasChildren(rootModule, modules)) {
-        finalConf += "same => n,Macro(wheretogo," + rootModule.mid + ",\"silence/1\",666)" + "\n";
+        finalConf += "same => n,Macro(wheretogo," + rootModule.mid + ",\"silence/1&scotip/200/FR_Welcome\",\"scotip/200/invalidKey\")" + "\n";
     }
     finalConf += "\n";
 
@@ -144,6 +145,14 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(mo
         return "SayDigits(1)"
     } else if (model == "playback_helloworld") {
         return "Playback(hello-world)";
+    }
+    else if (model == "playback_welcome") {
+        return "Playback(silence/1&scotip/200/FR_Welcome)";
+    } else if (model == "playback_about") {
+        return "Playback(silence/1&scotip/200/FR_About)";
+    }
+    else if (model == "playback_about_services") {
+        return "Playback(silence/1&hello-world)";
     }
     else {
         return "Playback(error)";
