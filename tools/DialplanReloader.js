@@ -167,7 +167,7 @@ DialplanReloader.prototype.moduleHasChildren = function moduleHasChildren(module
 
 
 DialplanReloader.prototype.writeConf = function writeConf(configuration) {
-    if (typeof process.env.PROD_SERVER !== "undefined" && process.env.PROD_SERVER == true) {
+    if (typeof process.env.PROD_SERVER !== "undefined" && process.env.PROD_SERVER == 1) {
         var basepath = "/usr/scotip/userdialplans/";
     } else {
         // Other's computer
