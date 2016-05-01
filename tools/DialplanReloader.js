@@ -97,7 +97,7 @@ DialplanReloader.prototype.generateAsteriskV1 = function generateAsteriskV1(root
     //finalConf += "same => n," + this.convertModuleToConf(rootModule) + "\n";
 
     if (this.moduleHasChildren(rootModule, modules)) {
-        finalConf += "same => n,Macro(wheretogo," + rootModule.mid + ",\"silence/1&scotip/200/FR_Welcome\",\"scotip/200/invalidKey\")" + "\n";
+        finalConf += "same => n,Macro(wheretogo," + rootModule.mid + ",\"silence/1&scotip/200/EN_Welcome\",\"scotip/200/invalidKey\")" + "\n";
     }
     finalConf += "\n";
 
@@ -147,9 +147,9 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(mo
         return "Playback(hello-world)";
     }
     else if (model == "playback_welcome") {
-        return "Playback(silence/1&scotip/200/FR_Welcome)";
+        return "Playback(silence/1&scotip/200/EN_Welcome)";
     } else if (model == "playback_about") {
-        return "Playback(silence/1&scotip/200/FR_About)";
+        return "Playback(silence/1&scotip/200/EN_About)";
     }
     else if (model == "playback_about_services") {
         return "Playback(silence/1&hello-world)";
