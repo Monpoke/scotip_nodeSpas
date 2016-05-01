@@ -42,6 +42,13 @@ server.register(plugins, function (err) {
             if (err) { throw err; }
 
             server.log('info', 'Server running at: ' + server.info.uri);
+            console.log('Server running at: '+ server.info.uri);
+
+            if(process.env.PROD_SERVER == true){
+                console.log("PRODUCTION SERVER");
+            } else {
+                console.log("Dev server");
+            }
         });
     }
 });
