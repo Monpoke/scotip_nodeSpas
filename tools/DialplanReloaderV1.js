@@ -8,7 +8,7 @@ var exec = require('child_process').exec;
 
 
 /**
- * Dialplan reloader V2.
+ * Dialplan reloader.
  * @param switchboard_data
  * @constructor
  */
@@ -60,7 +60,7 @@ DialplanReloader.prototype.checkModules = function checkModules(err, modules) {
         return false;
     }
 
-    this.generateAsteriskV2(rootModule, modules);
+    this.generateAsteriskV1(rootModule, modules);
 
 };
 
@@ -70,7 +70,7 @@ DialplanReloader.prototype.checkModules = function checkModules(err, modules) {
  * @param rootModule
  * @param modules
  */
-DialplanReloader.prototype.generateAsteriskV2 = function generateAsteriskV2(rootModule, modules) {
+DialplanReloader.prototype.generateAsteriskV1 = function generateAsteriskV1(rootModule, modules) {
 
     var finalConf = "";
 
@@ -94,16 +94,17 @@ DialplanReloader.prototype.generateAsteriskV2 = function generateAsteriskV2(root
      * ROOT MODULE
      */
     finalConf += "exten => start,1,Answer()" + "\n";
-    var totalRegistered = 0, total = (modules.length);
-    this.createModuleConf(true, rootModule, modules, function (r) {
-        totalRegistered++;
-        finalConf += r + "\n";
-    });
+    //finalConf += "same => n," + this.convertModuleToConf(rootModule) + "\n";
+
+    if (this.moduleHasChildren(rootModule, modules)) {
+        finalConf += "same => n,Macro(wheretogo," + rootModule.mid + ",\"silence/1&scotip/200/EN_Welcome\",\"scotip/200/invalidKey\")" + "\n";
+    }
+    finalConf += "\n";
+
 
     /*
      * OTHERS MODULES
      */
-    var dr = this;
     for (var i = 0, t = modules.length; i < t; i++) {
         var currentMod = modules[i];
 
@@ -112,93 +113,47 @@ DialplanReloader.prototype.generateAsteriskV2 = function generateAsteriskV2(root
             continue;
         }
 
-        this.createModuleConf(false, currentMod, modules, function (r) {
-            totalRegistered++;
-            finalConf += r + "\n";
-            if (totalRegistered === total) {
-                dr.writeConf(finalConf);
-            } else {
-                console.log(totalRegistered + "/" + total);
-            }
-        });
+        // EXTENSION NAME, IN ORDER TO BE REACHED FROM ITS PARENT
+        var extenName = "mod" + currentMod.moduleParent_mid + "key" + currentMod.phone_key;
+
+        // START CONFIGURATION
+        finalConf += "; MODULE [" + currentMod.mid + "] " + currentMod.slug + "\n";
+        finalConf += "exten => " + extenName + ",1," + this.convertModuleToConf(currentMod) + "\n";
+
+        /**
+         * If there is a child with phone_key...
+         */
+        if (this.moduleHasChildren(currentMod, modules)) {
+            finalConf += "same => n,Macro(wheretogo," + currentMod.mid + ",\"silence/1\",666)" + "\n";
+        }
+
+        finalConf += "\n";
 
     }
 
+    this.writeConf(finalConf);
 };
 
 
-DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, mod, modules, callback) {
-
-    var dr = this;
-
-    /**
-     * Need to load configurations
-     */
-    SwitchboardDAO.loadModuleProperties(mod.mid, function (err, properties) {
-        var re = "";
-
-        if (isRoot === true) {
-            re += "same => n,";
-        } else {
-            // CHOOSE AN EXTENSION NAME
-            var extenName = "mod" + mod.moduleParent_mid + "key" + mod.phone_key;
-
-            // HEADER
-            re += "\n" +
-                "; MODULE [" + mod.mid + "] " + mod.slug + "\n" +
-                "exten => " + extenName + ",1,";
-        }
-
-        // CHECK MODULE
-        if (mod.slug === "read") {
-            var file = findProperty("file", properties);
-
-            // SPECIAL ONE
-            re += "Macro(wheretogo," + mod.mid + ",\"" + file + "\",\"scotip/200/invalidKey\")" + "\n";
-
-        }
-        else {
-            re += dr.convertModuleToConf(mod, properties) + "\n";
-
-            if (dr.moduleHasChildren(mod, modules)) {
-                re += "same => n,Macro(wheretogo," + mod.mid + ",\"silence/1\",\"scotip/200/invalidKey\")" + "\n";
-            }
-
-        }
-
-        callback(re);
-    });
-
-
-}
-
-
-function findProperty(name, list) {
-    for (var i = 0; i < list.length; i++) {
-        if (list[i].settings_KEY === name) {
-            return list[i].setting;
-        }
-    }
-    return null;
-}
-
-DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(module, properties) {
+DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(module) {
     // JUST STATIC FOR NOW...
     var model = module.slug;
-
-    console.log("Gen for model: "+model);
-
-    if (model == "playback") {
-        var file = findProperty("file", properties);
-        return "Playback(" + file + ")";
+    if (model == "playblack_3") {
+        return "SayDigits(3)"
     }
-
-    else if (model == "read") {
-        var file = findProperty("file", properties);
-        return "Macro(wheretogo," + module.mid + ",\"" + file + "\",\"scotip/200/invalidKey\")" + "\n";
-
+    else if (model == "playback_1") {
+        return "SayDigits(1)"
+    } else if (model == "playback_helloworld") {
+        return "Playback(hello-world)";
     }
-
+    else if (model == "playback_welcome") {
+        return "Playback(silence/1&scotip/200/EN_Welcome)";
+    } else if (model == "playback_about") {
+        return "Playback(silence/1&scotip/200/EN_About)";
+    }
+    else if (model == "playback_about_services") {
+        return "Playback(silence/1&hello-world)";
+    }
     else {
         return "Playback(error)";
     }

@@ -28,8 +28,6 @@ SwitchboardsController.prototype.regenerateDialplan = function(request, reply) {
         });
 
 
-
-
     } catch (e) {
         reply(Boom.notFound(e.message));
     }

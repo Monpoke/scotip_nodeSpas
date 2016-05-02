@@ -49,6 +49,26 @@ SwitchboardDAO.prototype = (function () {
             });
         },
 
+        loadModuleProperties: function loadModuleProperties(mid, callback) {
+            var values = [
+                mid
+            ];
+
+            var sql = 'SELECT ' +
+                'module_settings.module_id, ' +
+                'module_settings.setting, ' +
+                'module_settings.settings_KEY ' +
+                'FROM ' +
+                'module_settings ' +
+                'WHERE module_settings.module_id = ?';
+
+            db.query({
+                sql: sql,
+                values: values,
+                callback: callback
+            });
+        }
+
 
     };
 })();
