@@ -20,13 +20,13 @@ server.connection({
 // Add routes
 var plugins = [
     {
-        register: require('./routes/tasks.js'),
+        register: require('./routes/switchboards.js'),
         options: {
             database: database
         }
     },
     {
-        register: require('./routes/switchboards.js'),
+        register: require('./routes/calls.js'),
         options: {
             database: database
         }
