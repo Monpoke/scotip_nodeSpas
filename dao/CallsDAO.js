@@ -29,8 +29,8 @@ CallDAO.prototype = (function () {
                 call.timestamp
             ];
 
-            var sql = 'INSERT INTO call_logs (switchboard_id, caller_number, timestamp)' +
-                ' VALUES(?, ?, ?)';
+            var sql = 'INSERT INTO call_logs (switchboard_id, caller_number, timestamp, finished, duration)' +
+                ' VALUES(?, ?, ?, 0, 0)';
 
             db.query({
                 sql: sql,

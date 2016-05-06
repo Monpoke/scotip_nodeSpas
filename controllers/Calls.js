@@ -8,7 +8,7 @@ var SwitchboardDAO = require('../dao/SwitchboardDAO');
 function CallsController(database) {
 };
 
-// [GET] /switchboards/{id}
+// [GET] /calls/new/{id}
 CallsController.prototype.newCall = function (request, reply) {
 
     try {
@@ -37,7 +37,7 @@ CallsController.prototype.checkParams = function checksParams(request, reply) {
 
     var call = {
         callerid: request.payload.callerid,
-        timestamp: request.payload.timestamp
+        timestamp: new Date()
     };
 
 

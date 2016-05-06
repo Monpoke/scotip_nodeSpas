@@ -3,7 +3,6 @@
 // Tasks routes
 var Joi = require('joi');
 var CallsController = require('../controllers/Calls');
-var Hapi = require('hapi');
 
 
 exports.register = function(server, options, next) {
@@ -24,8 +23,7 @@ exports.register = function(server, options, next) {
                         id: Joi.string().regex(/[0-9]+/)
                     },
                     payload: {
-                        callerid: Joi.number().required(),
-                        timestamp: Joi.string().regex(/[A-Z0-9]{1,}/).required()
+                        callerid: Joi.string().regex(/[0-9]+/).required()
                     }
                 }
             }
