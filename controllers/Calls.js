@@ -34,12 +34,36 @@ CallsController.prototype.newCall = function (request, reply) {
 };
 
 // [POST] /calls/end/{id}
-CallsController.prototype.endCall = function(request, reply){
-    CallsDAO.endCall(request.params.id);
-    reply("ok");
+CallsController.prototype.endCall = function (request, reply) {
+    CallsDAO.find(request.params.id, function (err, rows) {
+        if (err) throw err;
+
+        if(rows.length==0){
+            reply(Boom.notFound("call not exists"));
+            return;
+        }
+
+        var call = rows[0];
+        var date = new Date(call.timestamp);
+
+        var now = new Date();
+        var totalTime = parseInt((now.getTime() - date.getTime()) / 1000);
+
+
+        var data = {
+            duration: totalTime
+        }
+
+        CallsDAO.endCall(request.params.id, data, function (err, ro){
+            if(err) throw err;
+            console.log("Ending call " + request.params.id);
+            reply("ok");
+        });
+
+    });
+
+
 }
-
-
 
 
 CallsController.prototype.checkParams = function checksParams(request, reply) {

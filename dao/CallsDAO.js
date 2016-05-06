@@ -12,8 +12,8 @@ CallDAO.prototype = (function () {
                 id
             ];
 
-            var sql = 'SELECT * FROM switchboard AS c ' +
-                'WHERE c.sid = ?';
+            var sql = 'SELECT * FROM call_logs AS c ' +
+                'WHERE c.callid = ?';
 
             db.query({
                 sql: sql,
@@ -43,18 +43,20 @@ CallDAO.prototype = (function () {
 
         },
 
-        endCall: function registerNewCall(call_id) {
+        endCall: function registerNewCall(call_id, data, callback) {
             var values = [
+                data.duration,
                 call_id
             ];
 
-            var sql = 'UPDATE call_logs SET finished=1 WHERE callid = ?';
+            var sql = 'UPDATE call_logs SET finished=1, duration = ? WHERE callid = ?';
 
             db.query({
                 sql: sql,
                 values: values,
                 callback: function (err, result) {
                     if (err) throw err;
+                    callback(err,result);
                 }
             })
 
