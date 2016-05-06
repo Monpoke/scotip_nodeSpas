@@ -38,7 +38,7 @@ exports.register = function(server, options, next) {
                         id: Joi.string().regex(/[0-9]+/)
                     },
                     payload: {
-                        //callerid: Joi.string().regex(/[0-9]+/).required()
+                        end: Joi.number()
                     }
                 }
             }
