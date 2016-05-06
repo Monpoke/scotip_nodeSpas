@@ -27,6 +27,21 @@ exports.register = function(server, options, next) {
                     }
                 }
             }
+        },
+        {
+            method: 'POST',
+            path: '/calls/end/{id}',
+            config: {
+                handler: callsController.endCall,
+                validate: {
+                    params: {
+                        id: Joi.string().regex(/[0-9]+/)
+                    },
+                    payload: {
+                        //callerid: Joi.string().regex(/[0-9]+/).required()
+                    }
+                }
+            }
         }
     ]);
 

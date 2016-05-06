@@ -33,6 +33,15 @@ CallsController.prototype.newCall = function (request, reply) {
 
 };
 
+// [POST] /calls/end/{id}
+CallsController.prototype.endCall = function(request, reply){
+    CallsDAO.endCall(request.params.id);
+    reply("ok");
+}
+
+
+
+
 CallsController.prototype.checkParams = function checksParams(request, reply) {
 
     var call = {

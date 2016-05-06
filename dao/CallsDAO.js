@@ -41,6 +41,23 @@ CallDAO.prototype = (function () {
                 }
             })
 
+        },
+
+        endCall: function registerNewCall(call_id) {
+            var values = [
+                call_id
+            ];
+
+            var sql = 'UPDATE call_logs SET finished=1 WHERE callid = ?';
+
+            db.query({
+                sql: sql,
+                values: values,
+                callback: function (err, result) {
+                    if (err) throw err;
+                }
+            })
+
         }
     };
 })();
