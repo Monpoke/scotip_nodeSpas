@@ -91,9 +91,48 @@ DialplanReloader.prototype.generateAsteriskV2 = function generateAsteriskV2(root
         + "[dialplan_user_" + this.switchboard.sid + "]" + "\n";
 
     /*
-     * ROOT MODULE
+     * REGISTRATIONS
      */
     finalConf += "exten => start,1,Answer()" + "\n";
+
+    // SOMES VARIABLES
+    finalConf += "; Some variables for the dialplan" + "\n" +
+        "same => n,Set(CURRENT_SWITCHBOARD_ID=" + this.switchboard.sid + ")" + "\n" +
+        "same => n,Set(CURRENT_CALLER=${CALLERID(num)})" + "\n" +
+        "same => n,Set(CALL_ID=${UNIQUEID})\n\n";
+
+
+    // NOTIFY FROM CALL
+    finalConf += "; NOTIFY CALL\n" +
+        "same => n,Macro(newcall,CALL_DB_ID,\"${CURRENT_SWITCHBOARD_ID}\",\"${CURRENT_CALLER}\")\n\n";
+
+    // GO TO ROOT MODULE
+    finalConf += ";GO TO ROOT MODULE\n" +
+        "same => n,Goto(${CONTEXT},mod_root,1)\n\n"
+
+
+    // REGISTER HANGOUT ACTION
+    finalConf += "exten => h,1,NoOp(\"HANGOUT\")\n" +
+        "same => n,Macro(endcall,${CALL_DB_ID})\n\n";
+
+
+    // ALL BINDS
+    finalConf += "; ====================\n" +
+        "; REGISTER ALL BINDS MODULES\n" +
+        "; ====================\n";
+
+    // for root
+    finalConf += "exten => mod_root,1,Goto(${CONTEXT}," + this.modName(rootModule.mid) + ",1)\n";
+
+    for (var i = 0, t = modules.length; i < t; i++) {
+        var currentMod = modules[i];
+        if (currentMod.phone_key == -1 || currentMod.moduleParent_mid == null) {
+            continue;
+        }
+        finalConf += "exten => " + this.modBindName(currentMod.moduleParent_mid, currentMod.phone_key) + ",1,Goto(${CONTEXT}," + this.modName(currentMod.mid) + ",1)\n";
+    }
+
+
     var totalRegistered = 0, total = (modules.length);
     this.createModuleConf(true, rootModule, modules, function (r) {
         totalRegistered++;
@@ -137,17 +176,21 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
     SwitchboardDAO.loadModuleProperties(mod.mid, function (err, properties) {
         var re = "";
 
-        if (isRoot === true) {
-            re += "same => n,";
-        } else {
-            // CHOOSE AN EXTENSION NAME
-            var extenName = "mod" + mod.moduleParent_mid + "key" + mod.phone_key;
+        // CHOOSE AN EXTENSION NAME
+        var extenName = "mod_" + mod.mid;
 
-            // HEADER
-            re += "\n" +
-                "; MODULE [" + mod.mid + "] " + mod.slug + "\n" +
-                "exten => " + extenName + ",1,";
-        }
+        // HEADER
+        re += "\n" +
+            "; MODULE [" + mod.mid + "] " + mod.slug + "\n" +
+            "exten => " + extenName + ",1,";
+
+
+        // SOME VARIABLES
+        re += "Set(CURRENT_MODULE_ID=" + mod.mid + ")" + "\n" +
+            "same => n,Set(PARENT_MODULE_ID=" + mod.moduleParent_mid + ")\n";
+
+
+        re += "same => n,";
 
         // CHECK MODULE
         if (mod.slug === "read") {
@@ -155,8 +198,8 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
 
             // SPECIAL ONE
             re += "Macro(wheretogo," + mod.mid + ",\"" + file + "\",\"scotip/200/invalidKey\")" + "\n";
-
         }
+
         else {
             re += dr.convertModuleToConf(mod, properties) + "\n";
 
@@ -186,7 +229,7 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(mo
     // JUST STATIC FOR NOW...
     var model = module.slug;
 
-    console.log("Gen for model: "+model);
+    console.log("Gen for model: " + model);
 
     if (model == "playback") {
         var file = findProperty("file", properties);
@@ -296,6 +339,15 @@ DialplanReloader.prototype.findRootModule = function (modules) {
 
     return rootMod;
 }
+
+
+DialplanReloader.prototype.modName = function modName(id) {
+    return "mod_" + id;
+};
+
+DialplanReloader.prototype.modBindName = function modBindName(parent, key) {
+    return "mod" + parent + "key" + key;
+};
 
 
 module.exports = DialplanReloader;
