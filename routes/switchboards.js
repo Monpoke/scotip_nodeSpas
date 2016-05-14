@@ -26,6 +26,18 @@ exports.register = function(server, options, next) {
                     }
                 }
             }
+        },
+        {
+            method: 'GET',
+            path: '/switchboards/exists/{id}',
+            config: {
+                handler: switchController.exists,
+                validate: {
+                    params: {
+                        id: Joi.string().regex(/[0-9]+/)
+                    }
+                }
+            }
         }
     ]);
 

@@ -30,6 +30,12 @@ var plugins = [
         options: {
             database: database
         }
+    },
+    {
+        register: require('./routes/dialplans.js'),
+        options: {
+            database: database
+        }
     }
 
 ];

@@ -33,6 +33,25 @@ SwitchboardsController.prototype.regenerateDialplan = function(request, reply) {
     }
 };
 
+// [GET] /switchboards/exists/{id}
+SwitchboardsController.prototype.exists = function(request, reply) {
+    try {
+        var id = request.params.id * 1;
+
+        SwitchboardDAO.find(id, function(err, rows){
+            if(err || rows.length == 0){
+                reply("error");
+            }
+            else {
+                reply("exists");
+            }
+        });
+
+    } catch (e) {
+        reply(Boom.notFound(e.message));
+    }
+};
+
 
 
 module.exports = SwitchboardsController;
