@@ -32,7 +32,7 @@ exports.register = function(server, options, next) {
             method: 'POST',
             path: '/dialplan/{sid}/module/updateFile/{mid}',
             config: {
-                handler: dialplanController.exists,
+                handler: dialplanController.updateFile,
                 validate: {
                     params: {
                         mid: Joi.string().regex(/[0-9]+/),

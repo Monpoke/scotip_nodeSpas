@@ -19,7 +19,7 @@ DialplansController.prototype.exists = function (request, reply) {
                 console.log("module don't exists");
             }
             else {
-                reply("ok");
+                reply("exists");
             }
         });
 
@@ -31,7 +31,7 @@ DialplansController.prototype.exists = function (request, reply) {
 };
 
 // [POST] /dialplan/module/updateFile/{id}
-DialplansController.prototype.exists = function (request, reply) {
+DialplansController.prototype.updateFile = function (request, reply) {
 
     try {
         var mid = request.params.mid * 1,
