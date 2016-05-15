@@ -54,6 +54,10 @@ DialplansController.prototype.updateFile = function (request, reply) {
                     }
                     reply("updated");
                     console.log("updated");
+
+                    // need to reload the dialplan
+
+
                 });
 
             }
