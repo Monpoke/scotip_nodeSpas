@@ -79,7 +79,7 @@ QueueReloader.prototype.generateAsteriskV2 = function generateAsteriskV2() {
             // HEADER
             finalConf += "[" + currentQu.asteriskName + "](scotipQueueModel)\n";
             for (var i = 0, t = ope.length; i < t; i++) {
-                finalConf += "member => " + ope[i].name;
+                finalConf += "member => SIP/" + ope[i].name;
                 if (ope[i].skype.readInt8() == 1) {
                     finalConf += "@skype";
                 }
