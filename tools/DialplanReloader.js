@@ -1,6 +1,32 @@
+/*
+ * Copyright (c) 2016. Pierre BOURGEOIS
+ *
+ *  Permission is hereby granted, free of charge, to any person
+ *  obtaining a copy of this software and associated documentation
+ *  files (the "Software"), to deal in the Software without restriction,
+ *  including without limitation the rights to use, copy, modify, merge,
+ *  publish, distribute, sublicense, and/or sell copies of the Software, and
+ *  to permit persons to whom the Software is furnished to do so, subject
+ *  to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 'use strict';
 
 var SwitchboardDAO = require('../dao/SwitchboardDAO');
+var OperatorDAO = require('../dao/OperatorDAO');
+
 var fs = require('fs');
 // or more concisely
 var util = require('util')
@@ -15,7 +41,13 @@ var exec = require('child_process').exec;
 function DialplanReloader(switchboard_data) {
     this.switchboard = switchboard_data;
 
-    this.loadModules();
+    var target = this;
+    OperatorDAO.findOperatorByCompany(switchboard_data.company_id, function (err, operators) {
+        target.operators = operators;
+        // load modules when operators are loaded
+        target.loadModules();
+    });
+
 
 };
 
@@ -134,22 +166,12 @@ DialplanReloader.prototype.generateAsteriskV2 = function generateAsteriskV2(root
 
 
     var totalRegistered = 0, total = (modules.length);
-    this.createModuleConf(true, rootModule, modules, function (r) {
-        totalRegistered++;
-        finalConf += r + "\n";
-    });
-
     /*
      * OTHERS MODULES
      */
     var dr = this;
     for (var i = 0, t = modules.length; i < t; i++) {
         var currentMod = modules[i];
-
-        // skip root module
-        if (currentMod.mid == rootModule.mid) {
-            continue;
-        }
 
         this.createModuleConf(false, currentMod, modules, function (r) {
             totalRegistered++;
@@ -174,42 +196,59 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
      * Need to load configurations
      */
     SwitchboardDAO.loadModuleProperties(mod.mid, function (err, properties) {
-        var re = "";
 
-        // CHOOSE AN EXTENSION NAME
-        var extenName = "mod_" + mod.mid;
+        SwitchboardDAO.loadModuleFiles(mod.mid, function (err2, files) {
 
-        // HEADER
-        re += "\n" +
-            "; MODULE [" + mod.mid + "] " + mod.slug + "\n" +
-            "exten => " + extenName + ",1,";
+            var re = "";
 
+            // CHOOSE AN EXTENSION NAME
+            var extenName = "mod_" + mod.mid;
 
-        // SOME VARIABLES
-        re += "Set(CURRENT_MODULE_ID=" + mod.mid + ")" + "\n" +
-            "same => n,Set(PARENT_MODULE_ID=" + mod.moduleParent_mid + ")\n";
+            // HEADER
+            re += "\n" +
+                "; MODULE [" + mod.mid + "] " + mod.slug + "\n" +
+                "exten => " + extenName + ",1,NoOp(Mod " + mod.mid + ")\n";
 
 
-        re += "same => n,";
+            // SOME VARIABLES
+            re += "same => n,Set(CURRENT_MODULE_ID=" + mod.mid + ")" + "\n" +
+                "same => n,Set(PARENT_MODULE_ID=" + mod.moduleParent_mid + ")\n";
 
-        // CHECK MODULE
-        if (mod.slug === "read") {
-            var file = findProperty("file", properties);
 
-            // SPECIAL ONE
-            re += "Macro(wheretogo," + mod.mid + ",\"" + file + "\",\"scotip/200/invalidKey\")" + "\n";
-        }
-
-        else {
-            re += dr.convertModuleToConf(mod, properties) + "\n";
-
-            if (dr.moduleHasChildren(mod, modules)) {
-                re += "same => n,Macro(wheretogo," + mod.mid + ",\"silence/1\",\"scotip/200/invalidKey\")" + "\n";
+            // IF SOME MOH AVAILABLE
+            if (mod.mohgroup_id != null) {
+                re += "same => n,SetMusicOnHold(" + mod.group_name + ")" + "\n";
             }
 
-        }
 
-        callback(re);
+            // FOR THE SPECIAL MODULE
+            re += dr.convertModuleToConf(mod, properties, files);
+
+
+            // CHECK MODULE
+            /*  if (mod.slug === "read") {
+             var file = findProperty("file", properties);
+
+             // SPECIAL ONE
+             re += "Macro(wheretogo," + mod.mid + ",\"" + file + "\",\"scotip/200/invalidKey\")" + "\n";
+             }
+
+             else {
+             re += dr.convertModuleToConf(mod, properties) + "\n";
+
+             if (dr.moduleHasChildren(mod, modules)) {
+             re += "same => n,Macro(wheretogo," + mod.mid + ",\"silence/1\",\"scotip/200/invalidKey\")" + "\n";
+             }
+
+             }
+             */
+
+            // CHILDREN MODULES
+
+
+            callback(re);
+
+        });
     });
 
 
@@ -218,33 +257,69 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
 
 function findProperty(name, list) {
     for (var i = 0; i < list.length; i++) {
-        if (list[i].settings_KEY === name) {
-            return list[i].setting;
+        if (typeof list[i].settings_KEY !== "undefined") {
+            if (list[i].settings_KEY === name) {
+                return list[i].setting;
+            }
+        }
+        // FILE TYPE
+        else {
+            if (list[i].files_KEY === name) {
+                return list[i].files;
+            }
         }
     }
     return null;
 }
 
-DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(module, properties) {
+DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(module, properties, files) {
     // JUST STATIC FOR NOW...
     var model = module.slug;
 
     console.log("Gen for model: " + model);
 
+    var toReturn = "";
+
     if (model == "playback") {
-        var file = findProperty("file", properties);
-        return "Playback(" + file + ")";
+
+        var file = this.getValidFile(module, "message", findProperty("message", files));
+
+        toReturn += "same => n,Playback(" + file + ")" + "\n";
+
     }
 
-    else if (model == "read") {
-        var file = findProperty("file", properties);
-        return "Macro(wheretogo," + module.mid + ",\"" + file + "\",\"scotip/200/invalidKey\")" + "\n";
+    else if (model == "operator") {
+        var operator = this.getOperator(module.oid);
+
+        if (operator === false) {
+            toReturn += "same => n,Playback(operator&error)" + "\n";
+        } else {
+            var unavailableFile = this.getValidFile(module, "unavailableOpe", findProperty("unavailable", files));
+
+            toReturn += "same => n,Dial(SIP/" + operator + ")" + "\n"
+                + "same => n,Playback(" + unavailableFile + ")" + "\n";
+
+        }
+
+    }
+    else if (model == "queue") {
+
+        var unavailableFile = this.getValidFile(module, "unavailableQueue", findProperty("unavailable", files));
+
+        toReturn += "same => n,Queue(" + module.asteriskName + ")" + "\n"
+            + "same => n,Playback(" + unavailableFile + ")" + "\n";
+    }
+    else if (model == "userinput") {
+        var file = this.getValidFile(module, findProperty("file", files));
+        toReturn += "same => n,NoOp(WaitForUserInput)" + "\n";
 
     }
 
     else {
-        return "Playback(error)";
+        toReturn = "same => n,Playback(error)" + "\n";
     }
+
+    return toReturn;
 };
 
 /**
@@ -260,6 +335,27 @@ DialplanReloader.prototype.moduleHasChildren = function moduleHasChildren(module
         }
     }
     return false;
+};
+
+DialplanReloader.prototype.nbChildren = function nbChildren(module, othersModules) {
+    var nb = 0;
+    for (var i = 0, t = othersModules.length; i < t; i++) {
+        if (othersModules[i].moduleParent_mid == module.mid) {
+            nb++;
+        }
+    }
+    return nb;
+};
+
+DialplanReloader.prototype.childrenList = function childrenList(module, othersModules) {
+    var children = [];
+    for (var i = 0, t = othersModules.length; i < t; i++) {
+        if (othersModules[i].moduleParent_mid == module.mid) {
+            children.push(othersModules[i]);
+            ;
+        }
+    }
+    return children;
 };
 
 
@@ -347,6 +443,62 @@ DialplanReloader.prototype.modName = function modName(id) {
 
 DialplanReloader.prototype.modBindName = function modBindName(parent, key) {
     return "mod" + parent + "key" + key;
+};
+
+
+/**
+ * Returns a valid file.
+ * @param module
+ * @param filename
+ * @param file
+ * @returns {*}
+ */
+DialplanReloader.prototype.getValidFile = function getValidFile(module, filename, file) {
+    console.log(module);
+    console.log(file);
+    if (file == null || file === "") {
+
+        // SOME DEFAULTS
+
+        return "silence/1&no&file&to&play";
+    }
+
+    // REPLACE CUSTOM AND LIBRARY
+    // JUSt ON / FOR NOW
+    var finalString = [];
+
+
+    var parts = file.split("/");
+    if (parts[0] == "custom") {
+        // add switchboard id
+        finalString.push("custom/" + module.switchboard_id + "/" + parts[1]);
+    } else {
+        // library
+        finalString.push(parts[1]);
+    }
+
+    // return
+    return finalString.join("&");
+
+};
+
+/**
+ * Returns an operator string.
+ * @param oid
+ * @returns {*}
+ */
+DialplanReloader.prototype.getOperator = function getValidFile(oid) {
+    for (var i = 0, t = this.operators.length; i < t; i++) {
+        if (this.operators[i].oid == oid) {
+            if (this.operators[i].skype.readInt8() == 1) {
+                return this.operators[i].name + "@skype";
+            } else {
+                return this.operators[i].name;
+            }
+        }
+    }
+
+    return false;
 };
 
 
