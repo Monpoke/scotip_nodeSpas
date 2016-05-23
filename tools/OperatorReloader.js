@@ -65,7 +65,7 @@ OperatorReloader.prototype.generateAsteriskV2 = function generateAsteriskV2() {
             continue;
         }
 
-        finalConf += "[" + currentOp.name + "]\n" +
+        finalConf += "[" + currentOp.name + "](scotipOperatorModel)\n" +
             "secret=" + currentOp.password + "\n\n";
     }
 
