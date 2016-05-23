@@ -178,8 +178,6 @@ DialplanReloader.prototype.generateAsteriskV2 = function generateAsteriskV2(root
             finalConf += r + "\n";
             if (totalRegistered === total) {
                 dr.writeConf(finalConf);
-            } else {
-                console.log(totalRegistered + "/" + total);
             }
         });
 
@@ -454,8 +452,6 @@ DialplanReloader.prototype.modBindName = function modBindName(parent, key) {
  * @returns {*}
  */
 DialplanReloader.prototype.getValidFile = function getValidFile(module, filename, file) {
-    console.log(module);
-    console.log(file);
     if (file == null || file === "") {
 
         // SOME DEFAULTS
