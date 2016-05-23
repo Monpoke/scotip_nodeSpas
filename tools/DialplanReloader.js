@@ -526,7 +526,7 @@ DialplanReloader.prototype.getValidFile = function getValidFile(module, filename
     var parts = file.split("/");
     if (parts[0] == "custom") {
         // add switchboard id
-        finalString.push("custom/" + module.switchboard_id + "/" + module.switchboard_id + "_" + parts[1]);
+        finalString.push("custom/" + module.switchboard_id + "/" + module.mid + "_" + parts[1]);
     } else {
         // library
         finalString.push(parts[1]);
