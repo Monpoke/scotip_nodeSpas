@@ -314,7 +314,7 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(ex
     if (model == "playback") {
 
         var canBeSkipped = findProperty("skip", properties);
-        if (canBeSkipped == "1") {
+        if (canBeSkipped == "0") {
             var file = this.getValidFile(module, "message", findProperty("message", files));
             toReturn += "same => n,Playback(" + file + ")" + "\n";
         }
