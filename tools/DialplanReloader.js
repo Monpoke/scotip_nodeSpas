@@ -242,11 +242,28 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
              */
 
             // CHILDREN MODULES
+            var childrenList = dr.childrenList(mod, modules);
 
             // IF ONLY ONE CHILD WITHOUT KEY, GO TO IT
+            if (childrenList.length == 1 && childrenList[0].phoneKeyDisabled.readInt8() == 1) {
+                re += "same => n,Goto(" + dr.modName(childrenList[0].mid) + ",1)" + "\n";
+            }
 
             // ELSE, WAIT FOR INPUT
+            else if (childrenList.length > 0) {
 
+                var whereMessage = dr.getValidFile(mod, "message", findProperty("message", files));
+                var inputError = dr.getValidFile(mod, "inputError", findProperty("inputError", files));
+
+                // read module + go to extension
+                re += "same => n,Macro(wheretogo," + mod.mid + ",\"" + whereMessage + "\",\"" + inputError + "\")" + "\n";
+
+
+            } else {
+                // CAN hangup
+                re += "same => n,Hangup()" + "\n";
+
+            }
 
 
             callback(re);
