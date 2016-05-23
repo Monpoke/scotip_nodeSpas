@@ -254,6 +254,9 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
 
                 var whereMessage;
 
+                console.log(mod.slug + " -> " +findProperty("skip",properties));
+                console.log(properties);
+
                 // PLAYBACK NON SKIPPABLE, SO WE JUST PLAY A SILENCE
                 if(mod.slug === "playback" && findProperty("skip",properties)!="1"){
                     whereMessage = "silence/1";
