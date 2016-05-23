@@ -71,7 +71,7 @@ DialplanReloader.prototype.checkModules = function checkModules(err, modules) {
     console.log("Loading modules for switchboard " + this.switchboard.sid);
 
     if (err != null) {
-        console.log(e);
+        console.log(err);
         return false;
     }
 
@@ -220,7 +220,7 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
 
 
             // FOR THE SPECIAL MODULE
-            re += dr.convertModuleToConf(mod, properties, files);
+            re += dr.convertModuleToConf(extenName, mod, properties, files);
 
 
             // CHECK MODULE
@@ -242,6 +242,11 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
              */
 
             // CHILDREN MODULES
+
+            // IF ONLY ONE CHILD WITHOUT KEY, GO TO IT
+
+            // ELSE, WAIT FOR INPUT
+
 
 
             callback(re);
@@ -270,7 +275,7 @@ function findProperty(name, list) {
     return null;
 }
 
-DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(module, properties, files) {
+DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(extenName, module, properties, files) {
     // JUST STATIC FOR NOW...
     var model = module.slug;
 
@@ -294,7 +299,7 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(mo
         } else {
             var unavailableFile = this.getValidFile(module, "unavailableOpe", findProperty("unavailable", files));
 
-            toReturn += "same => n,Dial(SIP/" + operator + ")" + "\n"
+            toReturn += "same => n,Dial(SIP/" + operator + ",,${GLOBAL_DIAL_TIMEOUT},m)" + "\n"
                 + "same => n,Playback(" + unavailableFile + ")" + "\n";
 
         }
@@ -308,9 +313,33 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(mo
             + "same => n,Playback(" + unavailableFile + ")" + "\n";
     }
     else if (model == "userinput") {
-        var file = this.getValidFile(module, findProperty("file", files));
-        toReturn += "same => n,NoOp(WaitForUserInput)" + "\n";
+        var file = this.getValidFile(module, "messageInput", findProperty("message", files));
+        var inputError = this.getValidFile(module, "inputError", findProperty("inputError", files));
 
+        var variableName = this.getValidVariableName(module, findProperty("variable", properties));
+        var checkUrl = findProperty("uri", properties);
+        var min = findProperty("numberFormatMin", properties) * 1;
+        var max = findProperty("numberFormatMax", properties) * 1;
+
+        toReturn += "same => n,Read(" + variableName + "," + file + ",,,3,15)" + "\n";
+
+        // CHECK SYNTAX
+        toReturn += "same => n,SET(VARLENGTH=${LEN(${" + variableName + "})})" + "\n";
+        var failAction = "Macro(failuserinput," + extenName + "," + inputError + ")";
+        var rightAction = ""; //":Playback(ok)";
+
+
+        toReturn += "same => n,ExecIf($[ $[ ${VARLENGTH} < " + min + " ] | $[ ${VARLENGTH} > " + max + "] ]?" + failAction + rightAction + ")" + "\n";
+
+        /**
+         * @TODO Check URL + MULTIVARIABLES
+         */
+        if (checkUrl != null && checkUrl != "") {
+            toReturn += "same => n,Macro(checkVariableValue," + extenName + "," + checkUrl + "," + variableName + ",${" + variableName + "}," + inputError + ")";
+        }
+
+        // SAVE ACTION
+        toReturn += "same => n,Macro(savevariable,${CALL_ID}," + variableName + ",${" + variableName + "})" + "\n";
     }
 
     else {
@@ -456,7 +485,7 @@ DialplanReloader.prototype.getValidFile = function getValidFile(module, filename
 
         // SOME DEFAULTS
 
-        return "silence/1&no&file&to&play";
+        return "silence/1&error";
     }
 
     // REPLACE CUSTOM AND LIBRARY
@@ -475,6 +504,24 @@ DialplanReloader.prototype.getValidFile = function getValidFile(module, filename
 
     // return
     return finalString.join("&");
+
+};
+
+/**
+ * Returns a valid file.
+ * @param module
+ * @param filename
+ * @param file
+ * @returns {*}
+ */
+DialplanReloader.prototype.getValidVariableName = function getValidVariableName(module, varname) {
+    if (varname == null || varname === "") {
+
+        // SOME DEFAULTS
+
+        return "USERVAR_" + "UNKNOWN";
+    }
+    return "USERVAR_" + varname;
 
 };
 

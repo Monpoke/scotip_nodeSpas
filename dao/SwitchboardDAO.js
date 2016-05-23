@@ -66,6 +66,7 @@ SwitchboardDAO.prototype = (function () {
                 'operator.company_id, ' +
                 'operator.skype, ' +
                 'queue.asteriskName, ' +
+                'queue.announce_frequency, ' +
                 'queue.publicData, ' +
                 'moh_group.mohgroup_id, ' +
                 'moh_group.group_name, ' +
