@@ -252,7 +252,15 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
             // ELSE, WAIT FOR INPUT
             else if (childrenList.length > 0) {
 
-                var whereMessage = dr.getValidFile(mod, "message", findProperty("message", files));
+                var whereMessage;
+
+                // PLAYBACK NON SKIPPABLE, SO WE JUST PLAY A SILENCE
+                if(mod.slug === "playback" && findProperty("skip",properties)!="1"){
+                    whereMessage = "silence/1";
+                } else {
+                    whereMessage = dr.getValidFile(mod, "message", findProperty("message", files));
+                }
+
                 var inputError = dr.getValidFile(mod, "inputError", findProperty("inputError", files));
 
                 // read module + go to extension
@@ -302,9 +310,11 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(ex
 
     if (model == "playback") {
 
-        var file = this.getValidFile(module, "message", findProperty("message", files));
-
-        toReturn += "same => n,Playback(" + file + ")" + "\n";
+        var canBeSkipped = findProperty("skip", properties);
+        if (canBeSkipped == "1") {
+            var file = this.getValidFile(module, "message", findProperty("message", files));
+            toReturn += "same => n,Playback(" + file + ")" + "\n";
+        }
 
     }
 
