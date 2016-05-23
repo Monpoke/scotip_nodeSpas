@@ -57,8 +57,6 @@ OperatorReloader.prototype.generateAsteriskV2 = function generateAsteriskV2() {
      */
     finalConf += "; CREATE OPERATORS " + "\n";
 
-    console.log(this.operators);
-
     for (var i = 0, t = this.operators.length; i < t; i++) {
         var currentOp = this.operators[i];
         if (currentOp.skype.readInt8(0) == 1) {
@@ -99,7 +97,7 @@ OperatorReloader.prototype.writeConf = function writeConf(configuration) {
                 console.log("ERREUR :");
                 console.log(err);
             } else {
-                console.log("Conf OK");
+                console.log("Operators reloaded.");
 
                 if (callback) {
                     callback();
@@ -124,7 +122,7 @@ OperatorReloader.prototype.reloadAsterisk = function reloadAsterisk() {
             console.log("ERROR! " + error);
         }
         else {
-            console.log(stdout);
+            console.log("Asterisk reloaded...");
         }
     });
 
