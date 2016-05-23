@@ -329,7 +329,7 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(ex
         } else {
             var unavailableFile = this.getValidFile(module, "unavailableOpe", findProperty("unavailable", files));
 
-            toReturn += "same => n,Dial(SIP/" + operator + ",,${GLOBAL_DIAL_TIMEOUT},m)" + "\n"
+            toReturn += "same => n,Dial(SIP/" + operator + ",${GLOBAL_DIAL_TIMEOUT},m)" + "\n"
                 + "same => n,Playback(" + unavailableFile + ")" + "\n";
 
         }
