@@ -48,7 +48,7 @@ function MOHReloader(company_id, moh) {
  * @param modules
  */
 MOHReloader.prototype.generateAsterisk = function generateAsterisk() {
-    var finalConf = "; MOH " +this.moh[i].switchboard_id  + "\n";
+    var finalConf = "; MOH " + "\n";
 
     for (var i = 0, t = this.moh.length; i < t; i++) {
         finalConf += "[SWI_" + this.moh[i].switchboard_id  + "_" + this.moh[i].group_name + "]" + "\n"
