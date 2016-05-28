@@ -48,10 +48,10 @@ function MOHReloader(company_id, moh) {
  * @param modules
  */
 MOHReloader.prototype.generateAsterisk = function generateAsterisk() {
-    var finalConf = "; MOH " + this.companyId + "\n";
+    var finalConf = "; MOH " +this.moh[i].switchboard_id  + "\n";
 
     for (var i = 0, t = this.moh.length; i < t; i++) {
-        finalConf += "[COM_" + this.companyId + "_" + this.moh[i].group_name + "]" + "\n"
+        finalConf += "[SWI_" + this.moh[i].switchboard_id  + "_" + this.moh[i].group_name + "]" + "\n"
             + "mode=files" + "\n"
             + "directory=/usr/scotip/usermoh/files/" + this.moh[i].switchboard_id + "/" + this.moh[i].mohgroup_id + "\n\n";
 
