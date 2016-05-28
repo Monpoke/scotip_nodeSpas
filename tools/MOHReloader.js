@@ -51,7 +51,7 @@ MOHReloader.prototype.generateAsterisk = function generateAsterisk() {
     var finalConf = "; MOH " + "\n";
 
     for (var i = 0, t = this.moh.length; i < t; i++) {
-        finalConf += "[SWI_" + this.moh[i].switchboard_id  + "_" + this.moh[i].group_name + "]" + "\n"
+        finalConf += "[SWI_" + this.moh[i].groupId  + "_" + this.moh[i].group_name + "]" + "\n"
             + "mode=files" + "\n"
             + "directory=/usr/scotip/usermoh/files/" + this.moh[i].mohgroup_id + "\n\n";
 
