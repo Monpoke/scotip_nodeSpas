@@ -215,7 +215,7 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
 
             // IF SOME MOH AVAILABLE
             if (mod.mohgroup_id != null) {
-                var mohName = "SWI_" + dr.switchboard.sid +"_" + mod.group_name;
+                var mohName = "SWI_" + mod.mohgroup_id +"_" + mod.group_name;
                 re += "same => n,SetMusicOnHold(" + mohName + ")" + "\n";
             }
 
