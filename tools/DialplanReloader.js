@@ -92,7 +92,7 @@ DialplanReloader.prototype.checkModules = function checkModules(err, modules) {
         return false;
     }
 
-    this.generateAsteriskV2(rootModule, modules);
+    this.generateAsterisk(rootModule, modules);
 
 };
 
@@ -102,7 +102,7 @@ DialplanReloader.prototype.checkModules = function checkModules(err, modules) {
  * @param rootModule
  * @param modules
  */
-DialplanReloader.prototype.generateAsteriskV2 = function generateAsteriskV2(rootModule, modules) {
+DialplanReloader.prototype.generateAsterisk = function generateAsteriskV2(rootModule, modules) {
 
     var finalConf = "";
 

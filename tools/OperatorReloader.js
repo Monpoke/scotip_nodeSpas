@@ -38,7 +38,7 @@ var exec = require('child_process').exec;
 function OperatorReloader(companyId, operator_data) {
     this.operators = operator_data;
     this.companyId = companyId;
-    this.generateAsteriskV2();
+    this.generateAsterisk();
 };
 
 
@@ -47,7 +47,7 @@ function OperatorReloader(companyId, operator_data) {
  * @param rootModule
  * @param modules
  */
-OperatorReloader.prototype.generateAsteriskV2 = function generateAsteriskV2() {
+OperatorReloader.prototype.generateAsterisk = function generateAsteriskV2() {
 
     var finalConf = "";
 

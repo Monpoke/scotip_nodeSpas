@@ -72,6 +72,12 @@ var plugins = [
         options: {
             database: database
         }
+    },
+    {
+        register: require('./routes/moh.js'),
+        options: {
+            database: database
+        }
     }
 
 ];

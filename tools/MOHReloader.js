@@ -35,9 +35,9 @@ var QueueDAO = require('../dao/QueuesDAO');
  * @param switchboard_data
  * @constructor
  */
-function QueueReloader(switchboard_id, queues) {
-    this.queues = queues;
-    this.switchboardId = switchboard_id;
+function MOHReloader(company_id, moh) {
+    this.moh = moh;
+    this.companyId = company_id;
     this.generateAsterisk();
 };
 
@@ -47,75 +47,29 @@ function QueueReloader(switchboard_id, queues) {
  * @param rootModule
  * @param modules
  */
-QueueReloader.prototype.generateAsterisk = function generateAsteriskV2() {
+MOHReloader.prototype.generateAsterisk = function generateAsterisk() {
+    var finalConf = "; MOH " + this.companyId + "\n";
 
-    var finalConf = "";
-
-    /**
-     * ACCESS CODE
-     * FOR LINES
-     */
-    finalConf += "; QUEUES " + "\n";
-
-    console.log(this.queues);
-
-    var target = this;
-
-    var toWrite = this.queues.length,
-        totalWriten = 0;
-
-    for (var i = 0, t = toWrite; i < t; i++) {
-        var currentQu = this.queues[i];
-
-
-        QueueDAO.findOperators(currentQu.qid, currentQu, function (currentQu, err, ope) {
-
-            if (err) {
-                console.log('ERROR!');
-                console.log(err);
-                return;
-            }
-
-            // HEADER
-            finalConf += "[" + currentQu.asteriskName + "](scotipQueueModel)\n";
-            for (var i = 0, t = ope.length; i < t; i++) {
-                finalConf += "member => SIP/" + ope[i].name;
-                if (ope[i].skype.readInt8() == 1) {
-                    finalConf += "@skype";
-                }
-
-                finalConf += "\n";
-            }
-
-            finalConf += "\n";
-
-            checkConf();
-        });
+    for (var i = 0, t = this.moh.length; i < t; i++) {
+        finalConf += "[COM_" + this.companyId + "_" + this.moh[i].group_name + "]" + "\n"
+            + "mode=files" + "\n"
+            + "directory=/usr/scotip/usermoh/files/" + this.moh[i].switchboard_id + "/" + this.moh[i].mohgroup_id + "\n\n";
 
     }
 
-    function checkConf(){
-        totalWriten++;
-
-        if(totalWriten>=toWrite){
-            target.writeConf(finalConf);
-        }
-    }
-
-
-
+    this.writeConf(finalConf);
 };
 
 
-QueueReloader.prototype.writeConf = function writeConf(configuration) {
+MOHReloader.prototype.writeConf = function writeConf(configuration) {
     if (typeof process.env.PROD_SERVER !== "undefined" && process.env.PROD_SERVER == 1) {
-        var basepath = "/usr/scotip/userqueues/";
+        var basepath = "/usr/scotip/moh/conf/";
     } else {
         // Other's computer
         var basepath = "./generated/";
     }
 
-    var filename = "queues_" + this.switchboardId + ".conf";
+    var filename = "moh_" + this.companyId + ".conf";
     var totalFilepath = basepath + filename;
 
 
@@ -148,9 +102,9 @@ QueueReloader.prototype.writeConf = function writeConf(configuration) {
 /**
  * Try to reload SIP USERS asterisk.
  */
-QueueReloader.prototype.reloadAsterisk = function reloadAsterisk() {
+MOHReloader.prototype.reloadAsterisk = function reloadAsterisk() {
 
-    exec("asterisk -rx \"queue reload all\"", function (error, stdout, stderr) {
+    exec("asterisk -rx \"moh reload\"", function (error, stdout, stderr) {
         if (error) {
             console.log("ERROR! " + error);
         }
@@ -162,4 +116,4 @@ QueueReloader.prototype.reloadAsterisk = function reloadAsterisk() {
 };
 
 
-module.exports = QueueReloader;
+module.exports = MOHReloader;
