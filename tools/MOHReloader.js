@@ -63,7 +63,7 @@ MOHReloader.prototype.generateAsterisk = function generateAsterisk() {
 
 MOHReloader.prototype.writeConf = function writeConf(configuration) {
     if (typeof process.env.PROD_SERVER !== "undefined" && process.env.PROD_SERVER == 1) {
-        var basepath = "/usr/scotip/moh/conf/";
+        var basepath = "/usr/scotip/usermoh/conf/";
     } else {
         // Other's computer
         var basepath = "./generated/";
