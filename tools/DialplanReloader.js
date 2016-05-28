@@ -215,31 +215,14 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
 
             // IF SOME MOH AVAILABLE
             if (mod.mohgroup_id != null) {
-                re += "same => n,SetMusicOnHold(" + mod.group_name + ")" + "\n";
+                var mohName = "SWI_" + this.switchboard.sid +"_" + mod.group_name;
+                re += "same => n,SetMusicOnHold(" + mohName + ")" + "\n";
             }
 
 
             // FOR THE SPECIAL MODULE
             re += dr.convertModuleToConf(extenName, mod, properties, files);
 
-
-            // CHECK MODULE
-            /*  if (mod.slug === "read") {
-             var file = findProperty("file", properties);
-
-             // SPECIAL ONE
-             re += "Macro(wheretogo," + mod.mid + ",\"" + file + "\",\"scotip/200/invalidKey\")" + "\n";
-             }
-
-             else {
-             re += dr.convertModuleToConf(mod, properties) + "\n";
-
-             if (dr.moduleHasChildren(mod, modules)) {
-             re += "same => n,Macro(wheretogo," + mod.mid + ",\"silence/1\",\"scotip/200/invalidKey\")" + "\n";
-             }
-
-             }
-             */
 
             // CHILDREN MODULES
             var childrenList = dr.childrenList(mod, modules);
@@ -254,11 +237,11 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
 
                 var whereMessage;
 
-                console.log(mod.slug + " -> " +findProperty("skip",properties));
+                console.log(mod.slug + " -> " + findProperty("skip", properties));
                 console.log(properties);
 
                 // PLAYBACK NON SKIPPABLE, SO WE JUST PLAY A SILENCE
-                if(mod.slug === "playback" && findProperty("skip",properties)!="1"){
+                if (mod.slug === "playback" && findProperty("skip", properties) != "1") {
                     whereMessage = "silence/1";
                 } else {
                     whereMessage = dr.getValidFile(mod, "message", findProperty("message", files));
