@@ -354,7 +354,7 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(ex
         }
 
         // SAVE ACTION
-        toReturn += "same => n,Macro(savevariable,${CALL_ID}," + variableName + ",${" + variableName + "})" + "\n";
+        toReturn += "same => n,Macro(savevariable,${CALL_DB_ID}," + variableName + ",${" + variableName + "})" + "\n";
     }
 
     else {
