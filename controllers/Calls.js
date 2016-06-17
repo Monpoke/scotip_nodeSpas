@@ -104,8 +104,13 @@ CallsController.prototype.recordAction = function (request, reply) {
 
         ModuleDAO.getModuleType(request.payload.mod, function (moduleType) {
 
+            var s = "User entered the module: #" + request.payload.mod + "[" + moduleType.slug + "]";
+            if (moduleType.phoneKeyDisabled.readInt8() == 0) {
+                s += " by pressing key <i>" + moduleType.phone_key + "</i>";
+            }
+
             var data = {
-                action: "User entered the module: #" + request.payload.mod + "[" + moduleType + "]"
+                action: s
             }
 
             CallsDAO.saveAction(request.params.id, data, function (err, ro) {

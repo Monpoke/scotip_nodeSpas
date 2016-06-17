@@ -70,7 +70,8 @@ CallDAO.prototype = (function () {
             ];
 
             var sql = 'SELECT ' +
-                'module_model.slug ' +
+                'module_model.slug, ' +
+                'module.phone_key, module.phoneKeyDisabled ' +
                 'FROM ' +
                 'module ' +
                 'INNER JOIN module_model ON module.model_id = module_model.model_id ' +
@@ -89,7 +90,7 @@ CallDAO.prototype = (function () {
                         callback("unknown");
                     }
                     else {
-                        callback(rows[0].slug);
+                        callback(rows[0]);
                     }
                 }
             });
