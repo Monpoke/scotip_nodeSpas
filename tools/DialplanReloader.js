@@ -219,6 +219,10 @@ DialplanReloader.prototype.createModuleConf = function createModuleConf(isRoot, 
                 re += "same => n,SetMusicOnHold(" + mohName + ")" + "\n";
             }
 
+            // HAVE TO REGISTER THE MODULE
+            re += "same => n,Macro(saveaction,${CALL_DB_ID},${CURRENT_MODULE_ID})" + "\n";
+
+
 
             // FOR THE SPECIAL MODULE
             re += dr.convertModuleToConf(extenName, mod, properties, files);
