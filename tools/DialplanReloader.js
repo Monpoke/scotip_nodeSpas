@@ -350,7 +350,7 @@ DialplanReloader.prototype.convertModuleToConf = function convertModuleToConf(ex
          * @TODO Check URL + MULTIVARIABLES
          */
         if (checkUrl != null && checkUrl != "") {
-            toReturn += "same => n,Macro(checkVariableValue," + extenName + "," + checkUrl + "," + variableName + ",${" + variableName + "}," + inputError + ")";
+            toReturn += "same => n,Macro(checkVariableValue," + extenName + "," + checkUrl + "," + variableName + ",${" + variableName + "}," + inputError + ")" + "\n";
         }
 
         // SAVE ACTION
