@@ -33,7 +33,7 @@ function QueuesController(database) {
     //this.switchboardDAO = new SwitchboardDAO();
 };
 
-// [GET] /operators/{companyId}
+// [GET] /queues/{companyId}
 QueuesController.prototype.reloadQueue = function(request, reply) {
     try {
         var id = request.params.switchboardId * 1;
@@ -56,7 +56,6 @@ QueuesController.prototype.reloadQueue = function(request, reply) {
         reply(Boom.notFound(e.message));
     }
 };
-
 
 
 

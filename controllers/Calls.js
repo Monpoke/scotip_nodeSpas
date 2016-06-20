@@ -154,6 +154,25 @@ CallsController.prototype.recordVariable = function (request, reply) {
 }
 
 
+// [POST] /calls/queuereplyer/{id}
+CallsController.prototype.saveReplyer = function (request, reply) {
+    CallsDAO.find(request.params.id, function (err, rows) {
+        if (err) throw err;
+
+        if (rows.length == 0) {
+            reply(Boom.notFound("call not exists"));
+            return;
+        }
+
+        var call = rows[0];
+
+
+    });
+
+
+}
+
+
 CallsController.prototype.checkParams = function checksParams(request, reply) {
 
     var call = {
